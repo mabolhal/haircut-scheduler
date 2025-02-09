@@ -1,0 +1,43 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Barber {
+  id            Int      @id @default(autoincrement())
+  name          String
+  email         String   @unique
+  phone         String
+  experience    Int      // years of experience
+  specialties   String[] // array of specialties
+  bio           String   @db.Text
+  imageUrl      String?
+  rating        Float    @default(5.0)
+  priceHaircut  Float    // price for haircut
+  priceBeard    Float    // price for beard trim
+  priceBoth     Float    // price for both services
+  availability  Json     // working hours for each day
+  languages     String[] // languages spoken
+  certificates  String[] // professional certificates
+  appointments  Appointment[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Appointment {
+  id          Int      @id @default(autoincrement())
+  startTime   DateTime
+  endTime     DateTime
+  customerName String
+  customerEmail String
+  customerPhone String
+  serviceType String
+  status      String   @default("pending") // pending, confirmed, completed, cancelled
+  barberId    Int
+  barber      Barber   @relation(fields: [barberId], references: [id])
+  createdAt   DateTime @default(now())
+} 
