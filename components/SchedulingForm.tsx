@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { format } from 'date-fns';
+import { useRouter } from 'next/navigation';
 
 export interface SchedulingData {
   name: string;
@@ -14,12 +15,14 @@ interface SchedulingFormProps {
   onSubmit: (data: SchedulingData) => void;
   submitButtonText?: string;
   selectedSlot: { start: Date; end: Date } | null;
+  barberId: number;
 }
 
 export default function SchedulingForm({ 
   onSubmit, 
   submitButtonText = "Schedule Appointment",
-  selectedSlot 
+  selectedSlot,
+  barberId 
 }: SchedulingFormProps) {
   const [formData, setFormData] = useState<SchedulingData>({
     name: '',
@@ -30,6 +33,8 @@ export default function SchedulingForm({
 
   const [phoneError, setPhoneError] = useState<string>('');
   const [emailError, setEmailError] = useState<string>('');
+
+  const router = useRouter();
 
   const validatePhone = (phone: string) => {
     const phoneRegex = /^\+?[1-9]\d{1,14}$/;
@@ -64,7 +69,42 @@ export default function SchedulingForm({
     const isPhoneValid = validatePhone(formData.phone);
     const isEmailValid = validateEmail(formData.email);
     if (isPhoneValid && isEmailValid) {
-      onSubmit(formData);
+      if (!barberId || isNaN(barberId)) {
+        console.error('Invalid barber ID:', barberId);
+        alert('Invalid barber ID');
+        return;
+      }
+
+      const payload = {
+        startTime: selectedSlot?.start,
+        endTime: selectedSlot?.end,
+        customerName: formData.name,
+        customerEmail: formData.email,
+        customerPhone: formData.phone,
+        serviceType: formData.serviceType,
+        barberId: Number(barberId),
+      };
+      console.log('Sending appointment request:', payload);
+
+      fetch('/api/appointments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.error) {
+          console.error('Appointment error:', data.error);
+          alert(data.error);
+        } else {
+          localStorage.setItem('scheduledAppointment', JSON.stringify(data));
+          router.push('/summary');
+        }
+      })
+      .catch(error => {
+        console.error('Error scheduling appointment:', error);
+        alert('Failed to schedule appointment. Please try again.');
+      });
     }
   };
 

@@ -7,37 +7,17 @@ export async function GET() {
       select: {
         id: true,
         name: true,
-        imageUrl: true,
-        rating: true,
-        specialties: true,
         experience: true,
+        specialties: true,
+        imageUrl: true,
       },
     });
 
     return NextResponse.json({ barbers });
-  } catch (error: any) {
-    console.error('Database error:', {
-      message: error.message,
-      code: error.code,
-      meta: error.meta,
-    });
-
-    if (error.code === 'P2021') {
-      return NextResponse.json(
-        { error: 'Database table not found' },
-        { status: 500 }
-      );
-    }
-
-    if (error.code === 'P2002') {
-      return NextResponse.json(
-        { error: 'Unique constraint failed' },
-        { status: 500 }
-      );
-    }
-
+  } catch (error) {
+    console.error('Failed to fetch barbers:', error);
     return NextResponse.json(
-      { error: 'Database error', details: error.message },
+      { error: 'Failed to fetch barbers' },
       { status: 500 }
     );
   }

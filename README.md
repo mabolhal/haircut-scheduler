@@ -1,24 +1,85 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Chevu - Modern Barber Booking Platform
 
-## Getting Started
+(In Progress) Chevu is a streamlined web application that connects clients with professional barbers, making it easy to schedule and manage haircut appointments.
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+### For Clients
+- **Browse Barbers**: View profiles, experience levels, and specialties of available barbers
+- **Easy Scheduling**: Interactive calendar interface for selecting appointment times
+- **Flexible Booking**: 30-minute time slots with real-time availability
+- **Appointment Management**: View and manage your upcoming appointments
+
+### For Barbers
+- **Professional Dashboard**: Track and manage daily appointments
+- **Calendar Management**: View scheduled appointments in a weekly/monthly format
+- **Client Information**: Access customer details and appointment history
+- **Availability Control**: Set and update working hours
+
+## Tech Stack
+
+- **Frontend**: Next.js 13 with TypeScript
+- **UI Components**: React with Tailwind CSS
+- **Calendar**: React Big Calendar
+- **Database**: PostgreSQL with Prisma ORM
+- **Authentication**: NextAuth.js
+- **API**: Next.js API Routes
+
+
+
+## Project Structure
+
+```
+chevu/
+├── components/           # Reusable UI components
+├── prisma/              # Database schema and migrations
+├── public/              # Static assets
+└── src/
+    ├── app/             # Next.js 13 app directory
+    │   ├── api/         # API routes
+    │   ├── auth/        # Authentication pages
+    │   └── barbers/     # Barber-related pages
+    └── lib/             # Utility functions and configurations
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Key Features Implementation
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Appointment Scheduling
+- Interactive calendar for time slot selection
+- Real-time availability checking
+- Automatic confirmation emails
+- Conflict prevention system
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Barber Management
+- Professional profile creation
+- Service management
+- Working hours configuration
+- Appointment tracking
+
+### User Experience
+- Responsive design
+- Intuitive booking flow
+- Real-time updates
+- Email notifications
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- Next.js team for the amazing framework
+- Tailwind CSS for the utility-first CSS framework
+- React Big Calendar for the calendar component
+- All contributors who have helped shape Chevu
 
 ## Learn More
 

@@ -1,48 +1,63 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import BarberCalendar from '../../../components/BarberCalendar';
-import AnalyticsDashboard from '../../../components/AnalyticsDashboard';
+import BarberAvailability from '../../../components/BarberAvailability';
 
 export default function Dashboard() {
-  const [view, setView] = useState<'calendar' | 'analytics'>('calendar');
+  const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    const checkAuth = () => {
+      const barberId = localStorage.getItem('barberId');
+      const barberName = localStorage.getItem('barberName');
+      
+      if (!barberId || barberId === 'undefined' || !barberName) {
+        localStorage.removeItem('barberId');
+        localStorage.removeItem('barberName');
+        router.push('/auth/login');
+        return;
+      }
+
+      setIsLoading(false);
+    };
+
+    checkAuth();
+  }, [router]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-xl text-gray-600">Loading...</div>
+      </div>
+    );
+  }
+
+  // if (!barberId) {
+  //   return (
+  //     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+  //       <div className="text-xl text-gray-600">
+  //         Please <a href="/auth/login" className="text-blue-600 hover:text-blue-700">log in</a> to view your dashboard.
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <h1 className="text-3xl font-bold text-gray-900">
-              Barber Dashboard
-            </h1>
-            <div className="space-x-4">
-              <button
-                onClick={() => setView('calendar')}
-                className={`px-4 py-2 rounded-md ${
-                  view === 'calendar' 
-                    ? 'bg-blue-600 text-white' 
-                    : 'bg-gray-200 text-gray-700'
-                }`}
-              >
-                Calendar
-              </button>
-              <button
-                onClick={() => setView('analytics')}
-                className={`px-4 py-2 rounded-md ${
-                  view === 'analytics' 
-                    ? 'bg-blue-600 text-white' 
-                    : 'bg-gray-200 text-gray-700'
-                }`}
-              >
-                Analytics
-              </button>
-            </div>
-          </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        {view === 'calendar' ? <BarberCalendar /> : <AnalyticsDashboard />}
+        <div className="space-y-6">
+          <BarberCalendar />
+          <BarberAvailability />
+        </div>
       </main>
     </div>
   );

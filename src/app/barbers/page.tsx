@@ -1,13 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import Image from 'next/image';
 
 interface Barber {
   id: number;
   name: string;
-  imageUrl: string | null;
+  imageUrl?: string;
   rating: number;
   specialties: string[];
   experience: number;
@@ -16,7 +16,6 @@ interface Barber {
 export default function BarbersPage() {
   const [barbers, setBarbers] = useState<Barber[]>([]);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
 
   useEffect(() => {
     async function fetchBarbers() {
@@ -46,89 +45,42 @@ export default function BarbersPage() {
     fetchBarbers();
   }, []);
 
-  const handleBarberSelect = (barberId: number) => {
-    router.push(`/schedule/${barberId}`);
-  };
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold text-gray-900">
-            Our Barbers
-          </h1>
-        </div>
-      </header>
-
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        {loading ? (
-          <div className="flex justify-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {barbers.map((barber) => (
-              <div
-                key={barber.id}
-                className="bg-white overflow-hidden shadow-sm rounded-lg hover:shadow-md transition-shadow cursor-pointer"
-                onClick={() => handleBarberSelect(barber.id)}
-              >
-                <div className="p-6">
-                  <div className="flex items-center space-x-4">
-                    {barber.imageUrl && (
-                      <div className="flex-shrink-0">
-                        <Image
-                          src={barber.imageUrl}
-                          alt={barber.name}
-                          width={64}
-                          height={64}
-                          className="rounded-full"
-                        />
-                      </div>
-                    )}
-                    <div>
-                      <h2 className="text-xl font-semibold text-gray-900">
-                        {barber.name}
-                      </h2>
-                      <div className="flex items-center mt-1">
-                        {[...Array(5)].map((_, i) => (
-                          <svg
-                            key={i}
-                            className={`h-5 w-5 ${
-                              i < Math.floor(barber.rating)
-                                ? 'text-yellow-400'
-                                : 'text-gray-300'
-                            }`}
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                          </svg>
-                        ))}
-                      </div>
-                      <p className="mt-2 text-sm text-gray-600">
-                        {barber.experience} years of experience
-                      </p>
-                    </div>
-                  </div>
-                  <div className="mt-4">
-                    <div className="flex flex-wrap gap-2">
-                      {barber.specialties.slice(0, 3).map((specialty, index) => (
-                        <span
-                          key={index}
-                          className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-                        >
-                          {specialty}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
+    <div className="min-h-screen bg-gray-50 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h1 className="text-3xl font-bold mb-8">Our Barbers</h1>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {barbers.map((barber) => (
+            <div key={barber.id} className="bg-white rounded-lg shadow p-6">
+              {barber.imageUrl && (
+                <img
+                  src={barber.imageUrl}
+                  alt={barber.name}
+                  className="w-full h-48 object-cover rounded-lg mb-4"
+                />
+              )}
+              <h2 className="text-xl font-bold mb-2">{barber.name}</h2>
+              <p className="text-gray-600 mb-2">{barber.experience} years experience</p>
+              <div className="mb-4">
+                {barber.specialties.map((specialty, index) => (
+                  <span
+                    key={index}
+                    className="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm mr-2 mb-2"
+                  >
+                    {specialty}
+                  </span>
+                ))}
               </div>
-            ))}
-          </div>
-        )}
-      </main>
+              <Link
+                href={`/barbers/${barber.id}/schedule`}
+                className="block w-full text-center bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
+              >
+                Schedule with {barber.name}
+              </Link>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 } 

@@ -1,10 +1,97 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 
+export async function GET(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const barberId = searchParams.get('barberId');
+
+    if (!barberId) {
+      return NextResponse.json({ 
+        success: false,
+        error: 'Barber ID is required',
+        appointments: [] 
+      }, { status: 400 });
+    }
+
+    const parsedBarberId = parseInt(barberId);
+    if (isNaN(parsedBarberId)) {
+      return NextResponse.json({ 
+        success: false,
+        error: 'Invalid barber ID format',
+        appointments: [] 
+      }, { status: 400 });
+    }
+
+    const appointments = await prisma.appointment.findMany({
+      where: {
+        barberId: parsedBarberId,
+        startTime: {
+          gte: new Date(),
+        },
+      },
+      select: {
+        id: true,
+        startTime: true,
+        endTime: true,
+        customerName: true,
+        customerEmail: true,
+        customerPhone: true,
+        serviceType: true,
+        barberId: true,
+        status: true,
+      },
+      orderBy: {
+        startTime: 'asc',
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      appointments: appointments || []
+    });
+
+  } catch (error) {
+    console.error('Failed to fetch appointments:', error);
+    return NextResponse.json({
+      success: false,
+      error: 'Failed to fetch appointments',
+      appointments: []
+    }, { status: 500 });
+  }
+}
+
 export async function POST(request: Request) {
   try {
-    const data = await request.json();
-    const { startTime, endTime, customerName, customerEmail, customerPhone, serviceType } = data;
+    const body = await request.json();
+    
+    const { 
+      startTime, 
+      endTime, 
+      customerName, 
+      customerEmail, 
+      customerPhone, 
+      serviceType,
+      barberId
+    } = body;
+
+    // Validate required fields
+    const missingFields = [];
+    if (!startTime) missingFields.push('startTime');
+    if (!endTime) missingFields.push('endTime');
+    if (!customerName) missingFields.push('customerName');
+    if (!customerEmail) missingFields.push('customerEmail');
+    if (!customerPhone) missingFields.push('customerPhone');
+    if (!serviceType) missingFields.push('serviceType');
+    if (!barberId) missingFields.push('barberId');
+
+    if (missingFields.length > 0) {
+      return NextResponse.json({ 
+        success: false,
+        error: `Missing required fields: ${missingFields.join(', ')}`,
+        appointment: null
+      }, { status: 400 });
+    }
 
     const appointment = await prisma.appointment.create({
       data: {
@@ -14,51 +101,23 @@ export async function POST(request: Request) {
         customerEmail,
         customerPhone,
         serviceType,
-        barberId: 1, // Assuming we're using the first barber for now
-        status: 'pending'
+        barberId: parseInt(barberId.toString()),
+        status: 'confirmed'
       },
     });
 
-    return NextResponse.json(appointment);
-  } catch (error) {
-    console.error('Appointment creation error:', error);
-    return NextResponse.json(
-      { error: 'Failed to create appointment' },
-      { status: 500 }
-    );
-  }
-}
-
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const barberId = searchParams.get('barberId');
-
-  console.log('Fetching appointments for barberId:', barberId);
-
-  try {
-    const appointments = await prisma.appointment.findMany({
-      where: {
-        barberId: barberId ? parseInt(barberId) : undefined,
-        startTime: {
-          gte: new Date(),
-        },
-        status: 'confirmed',
-      },
-      select: {
-        id: true,
-        startTime: true,
-        endTime: true,
-        status: true,
-      },
+    return NextResponse.json({
+      success: true,
+      appointment,
+      error: null
     });
 
-    console.log('Found appointments:', appointments);
-    return NextResponse.json({ appointments });
   } catch (error) {
-    console.error('Failed to fetch appointments:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch appointments' },
-      { status: 500 }
-    );
+    console.error('Failed to create appointment:', error);
+    return NextResponse.json({
+      success: false,
+      error: 'Failed to create appointment',
+      appointment: null
+    }, { status: 500 });
   }
 } 

@@ -1,4 +1,5 @@
 const { PrismaClient } = require('@prisma/client')
+const bcrypt = require('bcryptjs')
 
 const prisma = new PrismaClient()
 
@@ -7,12 +8,16 @@ async function main() {
   await prisma.appointment.deleteMany({});
   await prisma.barber.deleteMany({});
 
+  // Create default password hash
+  const defaultPassword = await bcrypt.hash('password123', 10);
+
   // Create barbers
   const barbers = await prisma.barber.createMany({
     data: [
       {
         name: "Alex Thompson",
         email: "alex@cutmaster.com",
+        password: defaultPassword,
         phone: "+44 7700 900077",
         experience: 12,
         specialties: ["Classic Cuts", "Modern Fades", "Beard Sculpting"],
@@ -38,6 +43,7 @@ async function main() {
         id: 2, // Explicitly set ID
         name: "John Smith",
         email: "john@cutmaster.com",
+        password: defaultPassword,
         phone: "+44 7700 900088",
         experience: 8,
         specialties: ["Fades", "Hair Design", "Hot Towel Shaves"],
