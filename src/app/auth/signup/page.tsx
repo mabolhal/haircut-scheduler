@@ -86,6 +86,17 @@ export default function BarberSignup() {
           </div>
 
           <div>
+            <label className="block text-sm font-medium text-gray-700">Phone</label>
+            <input
+              type="tel"
+              required
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+              value={formData.phone}
+              onChange={(e) => setFormData({...formData, phone: e.target.value})}
+            />
+          </div>
+
+          <div>
             <label className="block text-sm font-medium text-gray-700">Password</label>
             <input
               type="password"
@@ -96,7 +107,88 @@ export default function BarberSignup() {
             />
           </div>
 
-          {/* Add other fields similarly */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Experience (years)</label>
+            <input
+              type="number"
+              required
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+              value={formData.experience}
+              onChange={(e) => setFormData({...formData, experience: parseInt(e.target.value)})}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Specialties</label>
+            <input
+              type="text"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+              value={formData.specialties}
+              onChange={(e) => setFormData({...formData, specialties: e.target.value})}
+              placeholder="e.g., Classic Cuts, Modern Fades"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Bio</label>
+            <textarea
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+              value={formData.bio}
+              onChange={(e) => setFormData({...formData, bio: e.target.value})}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Languages</label>
+            <input
+              type="text"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+              value={formData.languages}
+              onChange={(e) => setFormData({...formData, languages: e.target.value})}
+              placeholder="e.g., English, Spanish"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Certificates</label>
+            <input
+              type="text"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+              value={formData.certificates}
+              onChange={(e) => setFormData({...formData, certificates: e.target.value})}
+              placeholder="e.g., Master Barber License"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Price for Haircut</label>
+            <input
+              type="number"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+              value={formData.priceHaircut}
+              onChange={(e) => setFormData({...formData, priceHaircut: parseFloat(e.target.value)})}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Price for Beard Trim</label>
+            <input
+              type="number"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+              value={formData.priceBeard}
+              onChange={(e) => setFormData({...formData, priceBeard: parseFloat(e.target.value)})}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Price for Both</label>
+            <input
+              type="number"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+              value={formData.priceBoth}
+              onChange={(e) => setFormData({...formData, priceBoth: parseFloat(e.target.value)})}
+            />
+          </div>
 
           <button
             type="submit"

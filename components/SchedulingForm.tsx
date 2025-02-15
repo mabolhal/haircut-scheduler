@@ -12,14 +12,14 @@ export interface SchedulingData {
 }
 
 interface SchedulingFormProps {
-  onSubmit: (data: SchedulingData) => void;
+  onSubmit?: (data: SchedulingData) => void;
   submitButtonText?: string;
   selectedSlot: { start: Date; end: Date } | null;
   barberId: number;
 }
 
 export default function SchedulingForm({ 
-  onSubmit, 
+  onSubmit = () => {},
   submitButtonText = "Schedule Appointment",
   selectedSlot,
   barberId 

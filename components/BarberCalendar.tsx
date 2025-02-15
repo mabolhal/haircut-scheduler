@@ -6,17 +6,19 @@ import { format, parse, startOfWeek, getDay } from 'date-fns';
 import { enUS } from 'date-fns/locale';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 
-const localizer = dateFnsLocalizer({
-  format,
-  parse,
-  startOfWeek,
-  getDay,
-  locales: {
-    'en-US': enUS,
-  },
-});
-
 interface Appointment {
+  id: string;
+  startTime: string;
+  endTime: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  serviceType: string;
+  status: string;
+  barberId: number;
+}
+
+interface CalendarEvent extends Event {
   id: string;
   title: string;
   start: Date;
@@ -28,9 +30,19 @@ interface Appointment {
   barberId: number;
 }
 
+const localizer = dateFnsLocalizer({
+  format,
+  parse,
+  startOfWeek,
+  getDay,
+  locales: {
+    'en-US': enUS,
+  },
+});
+
 export default function BarberCalendar() {
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
+  const [appointments, setAppointments] = useState<CalendarEvent[]>([]);
+  const [selectedAppointment, setSelectedAppointment] = useState<CalendarEvent | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -48,7 +60,7 @@ export default function BarberCalendar() {
         const data = await response.json();
         
         if (data.success) {
-          const formattedAppointments = data.appointments.map((appointment: any) => ({
+          const formattedAppointments = data.appointments.map((appointment: Appointment) => ({
             id: appointment.id,
             title: appointment.serviceType,
             start: new Date(appointment.startTime),
@@ -72,8 +84,8 @@ export default function BarberCalendar() {
     fetchAppointments();
   }, []);
 
-  const handleSelectEvent = (event: Event) => {
-    setSelectedAppointment(event as Appointment);
+  const handleSelectEvent = (event: CalendarEvent) => {
+    setSelectedAppointment(event);
   };
 
   if (error) {

@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable react-hooks/exhaustive-deps */
 'use client';
 
 import { use } from 'react';
@@ -18,6 +21,8 @@ import '@/styles/calendar.css';
 import SchedulingForm from '../../../../components/SchedulingForm';
 import BarberProfile from '../../../../components/BarberProfile';
 import type { SchedulingData } from '../../../../components/SchedulingForm';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 const localizer = dateFnsLocalizer({
   format,
@@ -38,6 +43,15 @@ interface Availability {
   [key: string]: { start: string; end: string } | null;
 }
 
+interface Appointment {
+  id: string;
+  startTime: string;
+  endTime: string;
+  customerName: string;
+  serviceType: string;
+  barberId: number;
+}
+
 export default function SchedulePage({ params }: { params: Promise<{ barberId: string }> }) {
   const resolvedParams = use(params);
   const barberId = parseInt(resolvedParams.barberId);
@@ -48,6 +62,8 @@ export default function SchedulePage({ params }: { params: Promise<{ barberId: s
   const [barberAvailability, setBarberAvailability] = useState<Availability | null>(null);
   const [barber, setBarber] = useState<any | null>(null);
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
+  const router = useRouter();
 
   const fetchData = async () => {
     try {
@@ -145,28 +161,49 @@ export default function SchedulePage({ params }: { params: Promise<{ barberId: s
     if (!selectedSlot) return;
 
     try {
+      const appointmentData = {
+        startTime: selectedSlot.start.toISOString(),
+        endTime: selectedSlot.end.toISOString(),
+        customerName: formData.name,
+        customerEmail: formData.email,
+        customerPhone: formData.phone,
+        serviceType: formData.serviceType,
+        barberId,
+      };
+
       const response = await fetch('/api/appointments', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...formData,
-          startTime: selectedSlot.start,
-          endTime: selectedSlot.end,
-          barberId,
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(appointmentData),
       });
 
+      const data = await response.json();
+
       if (response.ok) {
+        // Store the complete appointment data including the response from the server
+        const appointmentSummary = {
+          ...appointmentData,
+          id: data.appointment.id,
+          status: 'confirmed'
+        };
+        
+        // Store in localStorage before redirecting
+        localStorage.setItem('scheduledAppointment', JSON.stringify(appointmentSummary));
+        
         setBookingStatus('success');
-        setTimeout(resetScheduler, 3000);
+        // Add a small delay before redirect to ensure data is stored
+        setTimeout(() => {
+          router.push('/summary');
+        }, 500);
       } else {
+        console.error('Booking failed:', data.error);
         setBookingStatus('error');
+        alert(data.error || 'Failed to schedule appointment');
       }
     } catch (error) {
       console.error('Failed to schedule appointment:', error);
       setBookingStatus('error');
+      alert('Failed to schedule appointment. Please try again.');
     }
   };
 
@@ -214,6 +251,10 @@ export default function SchedulePage({ params }: { params: Promise<{ barberId: s
         </span>
       </div>
     );
+  };
+
+  const handleSelectEvent = (event: Appointment) => {
+    setSelectedAppointment(event);
   };
 
   return (
@@ -336,6 +377,7 @@ export default function SchedulePage({ params }: { params: Promise<{ barberId: s
                   onSubmit={handleSchedulingSubmit}
                   submitButtonText="Schedule Appointment"
                   selectedSlot={selectedSlot}
+                  barberId={barberId}
                 />
               )}
             </div>

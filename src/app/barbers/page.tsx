@@ -53,9 +53,11 @@ export default function BarbersPage() {
           {barbers.map((barber) => (
             <div key={barber.id} className="bg-white rounded-lg shadow p-6">
               {barber.imageUrl && (
-                <img
+                <Image
                   src={barber.imageUrl}
                   alt={barber.name}
+                  width={400}
+                  height={300}
                   className="w-full h-48 object-cover rounded-lg mb-4"
                 />
               )}

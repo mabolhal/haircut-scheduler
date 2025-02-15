@@ -2,6 +2,11 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import bcrypt from 'bcryptjs';
 
+type ErrorWithMessage = Error & {
+  message: string;
+  code?: string;
+};
+
 export async function POST(request: Request) {
   try {
     const { email, password } = await request.json();
@@ -30,8 +35,9 @@ export async function POST(request: Request) {
       barberId: barber.id,
       barberName: barber.name 
     });
-  } catch (error: any) {
-    console.error('Login error:', error);
-    return NextResponse.json({ error: error.message || 'Login failed' }, { status: 500 });
+  } catch (error) {
+    const err = error as ErrorWithMessage;
+    console.error('Login error:', err);
+    return NextResponse.json({ error: err.message || 'Login failed' }, { status: 500 });
   }
 } 

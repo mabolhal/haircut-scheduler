@@ -21,7 +21,7 @@ export default function AnalyticsDashboard() {
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <div className="bg-blue-50 p-4 rounded-lg">
-          <h3 className="text-lg font-semibold">Today's Earnings</h3>
+          <h3 className="text-lg font-semibold">Today</h3>
           <p className="text-2xl font-bold">€{analytics.dailyEarnings}</p>
         </div>
         <div className="bg-green-50 p-4 rounded-lg">
