@@ -16,13 +16,15 @@ interface SchedulingFormProps {
   submitButtonText?: string;
   selectedSlot: { start: Date; end: Date } | null;
   barberId: number;
+  isSubmitting?: boolean;
 }
 
 export default function SchedulingForm({ 
   onSubmit = () => {},
   submitButtonText = "Schedule Appointment",
   selectedSlot,
-  barberId 
+  barberId,
+  isSubmitting = false
 }: SchedulingFormProps) {
   const [formData, setFormData] = useState<SchedulingData>({
     name: '',
