@@ -21,19 +21,11 @@ export default function BarbersPage() {
     async function fetchBarbers() {
       try {
         const response = await fetch('/api/barbers');
-        console.log('API Response:', response.status); // Debug log
-        
         if (response.ok) {
           const data = await response.json();
-          console.log('Received data:', data); // Debug log
-          
           if (data.barbers) {
             setBarbers(data.barbers);
-          } else {
-            console.error('No barbers data in response');
           }
-        } else {
-          console.error('Failed to fetch barbers:', response.statusText);
         }
       } catch (error) {
         console.error('Failed to fetch barbers:', error);
