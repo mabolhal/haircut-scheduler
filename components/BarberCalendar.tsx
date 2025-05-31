@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Calendar, dateFnsLocalizer, Event } from 'react-big-calendar';
+import { Calendar, dateFnsLocalizer, Event, View } from 'react-big-calendar';
 import { format, parse, startOfWeek, getDay } from 'date-fns';
 import { enUS } from 'date-fns/locale';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
@@ -44,6 +44,7 @@ export default function BarberCalendar() {
   const [appointments, setAppointments] = useState<CalendarEvent[]>([]);
   const [selectedAppointment, setSelectedAppointment] = useState<CalendarEvent | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [view, setView] = useState<View>('month');
 
   useEffect(() => {
     const fetchAppointments = async () => {
@@ -88,6 +89,23 @@ export default function BarberCalendar() {
     setSelectedAppointment(event);
   };
 
+  const handleNavigate = (action: 'PREV' | 'NEXT' | 'TODAY') => {
+    const calendar = document.querySelector('.rbc-calendar') as any;
+    if (calendar) {
+      switch (action) {
+        case 'PREV':
+          calendar.getApi().prev();
+          break;
+        case 'NEXT':
+          calendar.getApi().next();
+          break;
+        case 'TODAY':
+          calendar.getApi().today();
+          break;
+      }
+    }
+  };
+
   if (error) {
     return (
       <div className="h-screen p-4">
@@ -120,6 +138,8 @@ export default function BarberCalendar() {
               padding: '10px',
             },
           })}
+          view={view}
+          onView={(newView) => setView(newView)}
         />
         {selectedAppointment && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">

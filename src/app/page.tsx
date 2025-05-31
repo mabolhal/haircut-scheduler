@@ -22,7 +22,7 @@ export default function LandingPage() {
                 onClick={() => router.push('/ai-search')}
                 className="rounded-md bg-blue-600 px-8 py-3 text-lg font-semibold text-white shadow-sm hover:bg-blue-500"
               >
-                Use AI Assistant
+                Chat with AI Assistant
               </button>
               <button
                 onClick={() => router.push('/barbers')}
