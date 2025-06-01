@@ -35,16 +35,6 @@ export default function Dashboard() {
     );
   }
 
-  // if (!barberId) {
-  //   return (
-  //     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-  //       <div className="text-xl text-gray-600">
-  //         Please <a href="/auth/login" className="text-blue-600 hover:text-blue-700">log in</a> to view your dashboard.
-  //       </div>
-  //     </div>
-  //   );
-  // }
-
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm">

@@ -17,15 +17,62 @@ interface Appointment {
   status: string;
 }
 
+interface BarberAvailability {
+  [day: string]: { start: string; end: string } | null;
+}
+
 const AppointmentScheduler: React.FC<Props> = ({ barberId, onTimeSlotSelect, existingAppointments }) => {
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [barberAvailability, setBarberAvailability] = useState<BarberAvailability | null>(null);
 
-  // TODO: Get available times from the barber db
-  const availableTimes = ["09:00 AM", "10:00 AM", "11:00 AM", "01:00 PM", "02:00 PM", "03:00 PM"];
+  // Function to generate time slots based on availability
+  const generateTimeSlots = (availability: BarberAvailability, date: Date): string[] => {
+    const dayOfWeek = format(date, 'EEEE').toLowerCase();
+    const dayAvailability = availability[dayOfWeek];
+    
+    if (!dayAvailability) return [];
+
+    const slots: string[] = [];
+    const [startHour, startMinute] = dayAvailability.start.split(':').map(Number);
+    const [endHour, endMinute] = dayAvailability.end.split(':').map(Number);
+    
+    let currentHour = startHour;
+    let currentMinute = startMinute;
+    
+    while (currentHour < endHour || (currentHour === endHour && currentMinute < endMinute)) {
+      const timeStr = `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')} ${currentHour >= 12 ? 'PM' : 'AM'}`;
+      slots.push(timeStr);
+      
+      // Add 30 minutes
+      currentMinute += 30;
+      if (currentMinute >= 60) {
+        currentHour += 1;
+        currentMinute = 0;
+      }
+    }
+    
+    return slots;
+  };
+
+  useEffect(() => {
+    const fetchBarberAvailability = async () => {
+      try {
+        const response = await fetch(`/api/barber?id=${barberId}`);
+        const data = await response.json();
+        if (response.ok) {
+          setBarberAvailability(data.barber.availability);
+        }
+      } catch (error) {
+        console.error('Failed to fetch barber availability:', error);
+      }
+    };
+
+    fetchBarberAvailability();
+  }, [barberId]);
 
   useEffect(() => {
     const fetchAppointments = async () => {
@@ -67,6 +114,7 @@ const AppointmentScheduler: React.FC<Props> = ({ barberId, onTimeSlotSelect, exi
     }
 
     // Check if time slot overlaps with any existing appointments
+    console.log("existingAppointments", existingAppointments);
     return existingAppointments.some(appointment => {
       const start = new Date(appointment.startTime);
       const end = new Date(appointment.endTime);
@@ -148,6 +196,11 @@ const AppointmentScheduler: React.FC<Props> = ({ barberId, onTimeSlotSelect, exi
   const formattedSelectedDay = selectedDay
     ? selectedDay.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })
     : "No day selected";
+
+  // Replace the hardcoded availableTimes with dynamic generation
+  const availableTimes = selectedDay && barberAvailability 
+    ? generateTimeSlots(barberAvailability, selectedDay)
+    : [];
 
   return (
     <div className="font-sans p-5">

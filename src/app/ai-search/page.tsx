@@ -235,7 +235,7 @@ export default function AISearchPage() {
   };
 
   // Update the customer info form submission handler
-  const handleCustomerInfoFormSubmit = (info: any) => {
+  const handleCustomerInfoFormSubmit = async (info: any) => {
     debug('=== SUBMITTING CUSTOMER INFO VIA FORM ===');
     debug('Contact info:', info);
     
@@ -243,16 +243,55 @@ export default function AISearchPage() {
       debug('Missing required contact information');
       return;
     }
+
+    if (!pendingAppointment) {
+      debug('No pending appointment to confirm');
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: 'I don\'t have a pending booking to update. Would you like to make a new appointment?'
+      }]);
+      return;
+    }
     
-    // Create a natural language message from the form data
-    const customerInfoMessage = `My name is ${info.name}, my email is ${info.email}${info.phone ? `, and my phone number is ${info.phone}` : ''}.`;
-    debug('Customer info message:', customerInfoMessage);
-    
-    // Set the message and submit
-    setPrompt(customerInfoMessage);
-    setTimeout(() => {
-      handleAISearch(new Event('submit') as any);
-    }, 100);
+    try {
+      // Update the appointment with contact info
+      debug('Sending update request to appointments API...');
+      const response = await fetch(`/api/appointments/${pendingAppointment.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customerName: info.name,
+          customerEmail: info.email,
+          customerPhone: info.phone || '',
+          status: 'confirmed'
+        }),
+      });
+
+      const data = await response.json();
+      debug('Received response from appointments API:', data);
+
+      if (response.ok) {
+        debug('Appointment confirmed successfully');
+        setPendingAppointment(null);
+        setMessages(prev => [...prev, {
+          role: 'assistant',
+          content: `Thank you, ${info.name}! Your appointment has been confirmed. We'll send a confirmation to ${info.email}.`
+        }]);
+      } else {
+        debug('Failed to confirm appointment:', data.error);
+        setMessages(prev => [...prev, {
+          role: 'assistant',
+          content: `Sorry, I had trouble confirming your appointment: ${data.error || 'Unknown error'}. Please try again.`
+        }]);
+      }
+    } catch (error) {
+      console.error('Failed to confirm booking:', error);
+      debug('Exception during confirmation:', error);
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: 'Sorry, there was a problem confirming your appointment. Please try again.'
+      }]);
+    }
   };
 
   // Handle direct confirmation via API
