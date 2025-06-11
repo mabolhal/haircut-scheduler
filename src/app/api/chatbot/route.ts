@@ -146,7 +146,7 @@ export async function POST(req: Request) {
     console.log('Detecting intent...');
     const { text: intent } = await generateText({
       model: deepseek('deepseek-chat', {
-        apiKey: process.env.DEEPSEEK_API_KEY || 'sk-6cc022f208e84c38bf2718bd6958b899', 
+        apiKey: process.env.DEEPSEEK_API_KEY, 
       }),
       messages: [
         {
