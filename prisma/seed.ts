@@ -31,9 +31,10 @@ async function main() {
         bio: "Master barber with over a decade of experience.",
         imageUrl: "/barber-profile.jpg",
         rating: 4.9,
-        priceHaircut: 30.00,
-        priceBeard: 20.00,
-        priceBoth: 45.00,
+        streetAddress: "123 Main Street",
+        city: "New York",
+        provinceState: "NY",
+        country: "USA",
         availability: {
           monday: { start: "09:00", end: "17:00" },
           tuesday: { start: "09:00", end: "17:00" },
@@ -47,7 +48,6 @@ async function main() {
         certificates: ["Master Barber License"]
       },
       {
-        id: 2, // Explicitly set ID
         name: "John Smith",
         email: "john@cutmaster.com",
         password: defaultPassword,
@@ -57,9 +57,10 @@ async function main() {
         bio: "Specializing in modern styles and precise fades.",
         imageUrl: "/barber-profile-2.jpg",
         rating: 4.7,
-        priceHaircut: 28.00,
-        priceBeard: 18.00,
-        priceBoth: 42.00,
+        streetAddress: "456 Oak Avenue",
+        city: "Los Angeles",
+        provinceState: "CA",
+        country: "USA",
         availability: {
           monday: { start: "10:00", end: "18:00" },
           tuesday: { start: "10:00", end: "18:00" },
@@ -71,6 +72,32 @@ async function main() {
         },
         languages: ["English"],
         certificates: ["Advanced Hair Design"]
+      },
+      {
+        name: "Maria Garcia",
+        email: "maria@cutmaster.com",
+        password: defaultPassword,
+        phone: "+1 555 123 4567",
+        experience: 15,
+        specialties: ["Hair Coloring", "Pixie Cuts", "Highlights"],
+        bio: "Expert in hair coloring and modern cuts for all hair types.",
+        imageUrl: "/barber-profile-3.jpg",
+        rating: 4.8,
+        streetAddress: "789 Elm Street",
+        city: "Toronto",
+        provinceState: "ON",
+        country: "Canada",
+        availability: {
+          monday: { start: "09:00", end: "17:00" },
+          tuesday: { start: "09:00", end: "17:00" },
+          wednesday: { start: "09:00", end: "17:00" },
+          thursday: { start: "09:00", end: "17:00" },
+          friday: { start: "09:00", end: "17:00" },
+          saturday: { start: "09:00", end: "16:00" },
+          sunday: null
+        },
+        languages: ["English", "Spanish", "French"],
+        certificates: ["Color Specialist Certification", "Master Stylist"]
       }
     ]
   });

@@ -160,36 +160,6 @@ export default function BarberSignup() {
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Price for Haircut</label>
-            <input
-              type="number"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-              value={formData.priceHaircut}
-              onChange={(e) => setFormData({...formData, priceHaircut: parseFloat(e.target.value)})}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Price for Beard Trim</label>
-            <input
-              type="number"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-              value={formData.priceBeard}
-              onChange={(e) => setFormData({...formData, priceBeard: parseFloat(e.target.value)})}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Price for Both</label>
-            <input
-              type="number"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-              value={formData.priceBoth}
-              onChange={(e) => setFormData({...formData, priceBoth: parseFloat(e.target.value)})}
-            />
-          </div>
-
           <button
             type="submit"
             className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"

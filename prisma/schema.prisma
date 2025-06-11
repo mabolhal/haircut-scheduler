@@ -18,27 +18,106 @@ model Barber {
   bio          String
   imageUrl     String?
   rating       Float         @default(5.0)
-  priceHaircut Float
-  priceBeard   Float
-  priceBoth    Float
   availability Json
   languages    String[]
   certificates String[]
+  streetAddress String?
+  city          String?
+  provinceState String?
+  country       String?
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   appointments Appointment[]
+  unavailabilities Unavailability[]
+  services     Service[]
+}
+
+model Customer {
+  id            Int           @id @default(autoincrement())
+  name          String
+  email         String        @unique
+  password      String        // Will be hashed in the application layer
+  phone         String
+  isVerified    Boolean       @default(false)
+  lastLogin     DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  appointments  Appointment[]
+  
+  // Payment Information
+  paymentMethods PaymentMethod[]
+  defaultPaymentMethodId Int?
+  billingAddress BillingAddress?
 }
 
 model Appointment {
   id            Int      @id @default(autoincrement())
   startTime     DateTime
   endTime       DateTime
-  customerName  String
-  customerEmail String
-  customerPhone String
-  serviceType   String
   status        String   @default("pending")
   barberId      Int
+  customerId    Int
   createdAt     DateTime @default(now())
   barber        Barber   @relation(fields: [barberId], references: [id])
+  customer      Customer @relation(fields: [customerId], references: [id])
+  services      Service[]
+
+  @@index([barberId])
+  @@index([customerId])
+}
+
+model Unavailability {
+  id        Int      @id @default(autoincrement())
+  barber    Barber   @relation(fields: [barberId], references: [id], onDelete: Cascade)
+  barberId  Int
+  date      DateTime // The date of unavailability
+  startTime String?  // Optional: partial-day unavailability (e.g., "13:00")
+  endTime   String?  // Optional: partial-day unavailability (e.g., "17:00")
+  reason    String?  // e.g., "Vacation", "Sick", etc.
+
+  @@index([barberId, date])
+}
+
+model Service {
+  id          Int      @id @default(autoincrement())
+  name        String   // e.g., "Classic Haircut", "Beard Trim", "Hair Coloring"
+  description String   // Detailed description of the service
+  duration    Int      // Duration in minutes
+  price       Float    // Price of the service
+  isActive    Boolean  @default(true)  // To enable/disable services
+  barber      Barber   @relation(fields: [barberId], references: [id], onDelete: Cascade)
+  barberId    Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  appointments Appointment[]
+
+  @@index([barberId])
+}
+
+model PaymentMethod {
+  id            Int      @id @default(autoincrement())
+  customer      Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customerId    Int
+  type          String   // e.g., "credit_card", "debit_card"
+  provider      String   // e.g., "visa", "mastercard"
+  lastFourDigits String
+  expiryDate    String   // Format: "MM/YY"
+  isDefault     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([customerId])
+}
+
+model BillingAddress {
+  id            Int      @id @default(autoincrement())
+  customer      Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customerId    Int      @unique
+  streetAddress String
+  city          String
+  state         String
+  postalCode    String
+  country       String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }

@@ -2,80 +2,63 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { format } from 'date-fns';
+
+interface Service {
+  id: number;
+  name: string;
+  description: string;
+  duration: number;
+  price: number;
+}
 
 interface AppointmentSummary {
-  id: string;
-  customerName: string;
-  customerEmail: string;
-  customerPhone: string;
-  serviceType: string;
-  startTime: string;
-  endTime: string;
-  status: string;
-  barberId: number;
+  appointment: {
+    id: number;
+    startTime: string;
+    endTime: string;
+    status: string;
+    customer: {
+      name: string;
+      email: string;
+      phone: string;
+    };
+    services: Service[];
+  };
+  totalPrice: number;
 }
 
 export default function SummaryPage() {
-  const router = useRouter();
   const [appointment, setAppointment] = useState<AppointmentSummary | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const storedAppointment = localStorage.getItem('scheduledAppointment');
-        console.log('Stored appointment:', storedAppointment); // Debug log
-        
-        if (storedAppointment) {
-          const parsedAppointment = JSON.parse(storedAppointment);
-  
-          console.log('Parsed appointment:', parsedAppointment); // Debug log
-          setAppointment(parsedAppointment.appointment);
-        }
-      } catch (error) {
-        console.error('Error retrieving appointment:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!isLoading && !appointment) {
+    const savedAppointment = localStorage.getItem('scheduledAppointment');
+    if (!savedAppointment) {
       router.push('/');
+      return;
     }
-  }, [isLoading, appointment, router]);
+    setAppointment(JSON.parse(savedAppointment));
+  }, [router]);
 
-  if (isLoading) {
+  if (!appointment) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-lg">Loading appointment details...</p>
+      <div className="min-h-screen bg-gray-50 py-12 px-4">
+        <div className="max-w-md mx-auto bg-white p-8 rounded-lg shadow">
+          <p className="text-center text-gray-500">Loading appointment details...</p>
+        </div>
       </div>
     );
   }
 
-  if (!appointment) {
-    return null;
-  }
-
   const formatDate = (dateString: string) => {
     try {
-      return new Date(dateString).toLocaleString('en-US', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
+      return format(new Date(dateString), 'EEEE, MMMM d, yyyy h:mm a');
     } catch (error) {
       console.error('Error formatting date:', error);
-      return 'Invalid Date';
+      return 'Invalid date';
     }
   };
-
-  console.log('Appointment state in render:', appointment); // Debug log
-  (window as any).appointment = appointment; // Expose to global scope for debugging
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
@@ -84,25 +67,47 @@ export default function SummaryPage() {
         <div className="space-y-4">
           <div>
             <p className="text-sm text-gray-500">Customer</p>
-            <p className="font-medium">{appointment.customerName || 'N/A'}</p>
+            <p className="font-medium">{appointment.appointment.customer.name}</p>
+            <p className="text-sm text-gray-600">{appointment.appointment.customer.email}</p>
+            <p className="text-sm text-gray-600">{appointment.appointment.customer.phone}</p>
           </div>
+
           <div>
-            <p className="text-sm text-gray-500">Service</p>
-            <p className="font-medium">{appointment?.serviceType || 'N/A'}</p>
+            <p className="text-sm text-gray-500">Services</p>
+            <div className="mt-2 space-y-2">
+              {appointment.appointment.services.map((service) => (
+                <div key={service.id} className="p-3 bg-gray-50 rounded-md">
+                  <p className="font-medium">{service.name}</p>
+                  <p className="text-sm text-gray-600">{service.description}</p>
+                  <p className="text-sm text-gray-600">
+                    Duration: {service.duration} minutes • Price: €{service.price.toFixed(2)}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
+
+          <div>
+            <p className="text-sm text-gray-500">Total Price</p>
+            <p className="font-medium">€{appointment.totalPrice.toFixed(2)}</p>
+          </div>
+
           <div>
             <p className="text-sm text-gray-500">Start Time</p>
-            <p className="font-medium">{formatDate(appointment?.startTime) || 'N/A'}</p>
+            <p className="font-medium">{formatDate(appointment.appointment.startTime)}</p>
           </div>
+
           <div>
             <p className="text-sm text-gray-500">End Time</p>
-            <p className="font-medium">{formatDate(appointment?.endTime) || 'N/A'}</p>
+            <p className="font-medium">{formatDate(appointment.appointment.endTime)}</p>
           </div>
+
           <div>
             <p className="text-sm text-gray-500">Status</p>
-            <p className="font-medium">{appointment?.status || 'N/A'}</p>
+            <p className="font-medium capitalize">{appointment.appointment.status}</p>
           </div>
         </div>
+
         <button
           onClick={() => {
             localStorage.removeItem('scheduledAppointment'); // Clean up

@@ -31,12 +31,60 @@ export default function SchedulePage() {
   const params = useParams();
   const router = useRouter();
   const barberId = parseInt(params.id as string);
+  const [barberName, setBarberName] = useState('');
   const [selectedSlot, setSelectedSlot] = useState<{ start: Date; end: Date } | null>(null);
   const [bookingStatus, setBookingStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  console.log('Scheduling page barberId:', barberId);
+  // Fetch barber name and cache it
+  useEffect(() => {
+    const fetchBarberName = async () => {
+      // Check cache first
+      const cachedData = localStorage.getItem('barberData');
+      const cacheTime = localStorage.getItem('barberDataTime');
+      
+      if (cachedData && cacheTime) {
+        const parsedData = JSON.parse(cachedData);
+        const parsedTime = parseInt(cacheTime);
+        const now = Date.now();
+        
+        // Use cache if it's less than 5 minutes old
+        if (now - parsedTime < 5 * 60 * 1000) {
+          const barber = parsedData.find((b: any) => b.id === barberId);
+          if (barber) {
+            setBarberName(barber.name);
+            return;
+          }
+        }
+      }
+      
+      // If no cache or expired, fetch from API
+      try {
+        const response = await fetch(`/api/barber?id=${barberId}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.barber) {
+            setBarberName(data.barber.name);
+            
+            // Update cache with all barbers
+            const barbersResponse = await fetch('/api/barbers');
+            if (barbersResponse.ok) {
+              const barbersData = await barbersResponse.json();
+              localStorage.setItem('barberData', JSON.stringify(barbersData.barbers));
+              localStorage.setItem('barberDataTime', Date.now().toString());
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching barber name:', error);
+      }
+    };
+
+    if (barberId) {
+      fetchBarberName();
+    }
+  }, [barberId]);
 
   // Fetch existing appointments for this barber
   useEffect(() => {
@@ -138,7 +186,7 @@ export default function SchedulePage() {
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold mb-8">Schedule an Appointment</h1>
+        <h1 className="text-3xl font-bold mb-8">Schedule an Appointment with {barberName}</h1>
         
         {isLoading ? (
           <div className="text-center py-8">

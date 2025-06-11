@@ -31,9 +31,6 @@ export async function POST(request: Request) {
           bio: data.bio || '',
           languages: data.languages || [],
           certificates: data.certificates || [],
-          priceHaircut: Number(data.priceHaircut) || 0,
-          priceBeard: Number(data.priceBeard) || 0,
-          priceBoth: Number(data.priceBoth) || 0,
           availability: data.availability || {
             monday: { start: "09:00", end: "17:00" },
             tuesday: { start: "09:00", end: "17:00" },

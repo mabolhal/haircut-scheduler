@@ -34,9 +34,13 @@ export async function GET(request: Request) {
         id: true,
         startTime: true,
         endTime: true,
-        customerName: true,
-        customerEmail: true,
-        customerPhone: true,
+        customer: {
+          select: {
+            name: true,
+            email: true,
+            phone: true,
+          },
+        },
         serviceType: true,
         barberId: true,
         status: true,

@@ -33,10 +33,17 @@ export async function PATCH(
     const appointment = await prisma.appointment.update({
       where: { id },
       data: {
-        customerName: data.customerName,
-        customerEmail: data.customerEmail,
-        customerPhone: data.customerPhone || '',
-        status: data.status || 'confirmed'
+        status: data.status || 'confirmed',
+        customer: {
+          update: {
+            name: data.customerName,
+            email: data.customerEmail,
+            phone: data.customerPhone || ''
+          }
+        }
+      },
+      include: {
+        customer: true
       }
     });
     console.log('Appointment updated:', appointment);

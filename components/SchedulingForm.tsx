@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { useRouter } from 'next/navigation';
 
@@ -8,7 +8,15 @@ export interface SchedulingData {
   name: string;
   email: string;
   phone: string;
-  serviceType: string;
+  serviceIds: number[];
+}
+
+interface Service {
+  id: number;
+  name: string;
+  description: string;
+  duration: number;
+  price: number;
 }
 
 interface SchedulingFormProps {
@@ -30,13 +38,37 @@ export default function SchedulingForm({
     name: '',
     email: '',
     phone: '',
-    serviceType: ''
+    serviceIds: []
   });
-
+  const [services, setServices] = useState<Service[]>([]);
+  const [isLoadingServices, setIsLoadingServices] = useState(true);
   const [phoneError, setPhoneError] = useState<string>('');
   const [emailError, setEmailError] = useState<string>('');
+  const [serviceError, setServiceError] = useState<string>('');
 
   const router = useRouter();
+
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const response = await fetch(`/api/barber/${barberId}/services`);
+        const data = await response.json();
+        if (response.ok) {
+          setServices(data.services);
+        } else {
+          console.error('Failed to fetch services:', data.error);
+        }
+      } catch (error) {
+        console.error('Error fetching services:', error);
+      } finally {
+        setIsLoadingServices(false);
+      }
+    };
+
+    if (barberId) {
+      fetchServices();
+    }
+  }, [barberId]);
 
   const validatePhone = (phone: string) => {
     const phoneRegex = /^\+?[1-9]\d{1,14}$/;
@@ -66,10 +98,39 @@ export default function SchedulingForm({
     return true;
   };
 
+  const handleServiceChange = (serviceId: number) => {
+    setFormData(prev => {
+      const newServiceIds = prev.serviceIds.includes(serviceId)
+        ? prev.serviceIds.filter(id => id !== serviceId)
+        : [...prev.serviceIds, serviceId];
+      
+      setServiceError(newServiceIds.length === 0 ? 'Please select at least one service' : '');
+      return { ...prev, serviceIds: newServiceIds };
+    });
+  };
+
+  const calculateTotalDuration = () => {
+    return services
+      .filter(service => formData.serviceIds.includes(service.id))
+      .reduce((total, service) => total + service.duration, 0);
+  };
+
+  const calculateTotalPrice = () => {
+    return services
+      .filter(service => formData.serviceIds.includes(service.id))
+      .reduce((total, service) => total + service.price, 0);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const isPhoneValid = validatePhone(formData.phone);
     const isEmailValid = validateEmail(formData.email);
+    
+    if (formData.serviceIds.length === 0) {
+      setServiceError('Please select at least one service');
+      return;
+    }
+
     if (isPhoneValid && isEmailValid) {
       if (!barberId || isNaN(barberId)) {
         console.error('Invalid barber ID:', barberId);
@@ -77,13 +138,20 @@ export default function SchedulingForm({
         return;
       }
 
+      const selectedServices = services.filter(service => formData.serviceIds.includes(service.id));
+      const totalDuration = calculateTotalDuration();
+      
+      // Adjust end time based on total service duration
+      const endTime = new Date(selectedSlot!.start);
+      endTime.setMinutes(endTime.getMinutes() + totalDuration);
+
       const payload = {
         startTime: selectedSlot?.start,
-        endTime: selectedSlot?.end,
+        endTime: endTime,
         customerName: formData.name,
         customerEmail: formData.email,
         customerPhone: formData.phone,
-        serviceType: formData.serviceType,
+        serviceIds: formData.serviceIds,
         barberId: Number(barberId),
       };
       console.log('Sending appointment request:', payload);
@@ -99,7 +167,11 @@ export default function SchedulingForm({
           console.error('Appointment error:', data.error);
           alert(data.error);
         } else {
-          localStorage.setItem('scheduledAppointment', JSON.stringify(data));
+          localStorage.setItem('scheduledAppointment', JSON.stringify({
+            ...data,
+            services: selectedServices,
+            totalPrice: calculateTotalPrice()
+          }));
           router.push('/summary');
         }
       })
@@ -189,32 +261,65 @@ export default function SchedulingForm({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Service Type
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Services
           </label>
-          <select
-            required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-            value={formData.serviceType}
-            onChange={(e) => setFormData({...formData, serviceType: e.target.value})}
-          >
-            <option value="">Select a service</option>
-            <option value="haircut">Haircut (€30)</option>
-            <option value="beard">Beard Trim (€20)</option>
-            <option value="both">Haircut & Beard Trim (€45)</option>
-          </select>
+          {isLoadingServices ? (
+            <div className="text-gray-500">Loading services...</div>
+          ) : services.length === 0 ? (
+            <div className="text-gray-500">No services available</div>
+          ) : (
+            <div className="space-y-2">
+              {services.map(service => (
+                <label key={service.id} className="flex items-start space-x-3 p-3 border rounded-md hover:bg-gray-50 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.serviceIds.includes(service.id)}
+                    onChange={() => handleServiceChange(service.id)}
+                    className="mt-1"
+                  />
+                  <div className="flex-1">
+                    <div className="font-medium">{service.name}</div>
+                    <div className="text-sm text-gray-500">{service.description}</div>
+                    <div className="text-sm text-gray-600">
+                      Duration: {service.duration} minutes • Price: €{service.price.toFixed(2)}
+                    </div>
+                  </div>
+                </label>
+              ))}
+              {serviceError && (
+                <p className="text-sm text-red-600">{serviceError}</p>
+              )}
+            </div>
+          )}
         </div>
+
+        {formData.serviceIds.length > 0 && (
+          <div className="mt-4 p-4 bg-gray-50 rounded-md">
+            <div className="font-medium">Summary</div>
+            <div className="text-sm text-gray-600">
+              Total Duration: {calculateTotalDuration()} minutes
+            </div>
+            <div className="text-sm text-gray-600">
+              Total Price: €{calculateTotalPrice().toFixed(2)}
+            </div>
+          </div>
+        )}
 
         <button
           type="submit"
-          disabled={!selectedSlot}
+          disabled={!selectedSlot || isSubmitting || formData.serviceIds.length === 0}
           className={`w-full py-2 px-4 rounded-md ${
-            selectedSlot
+            selectedSlot && !isSubmitting && formData.serviceIds.length > 0
               ? 'bg-blue-600 text-white hover:bg-blue-700'
               : 'bg-gray-300 text-gray-500 cursor-not-allowed'
           }`}
         >
-          {!selectedSlot ? 'Select a time slot first' : submitButtonText}
+          {!selectedSlot 
+            ? 'Select a time slot first' 
+            : isSubmitting 
+              ? 'Scheduling...' 
+              : submitButtonText}
         </button>
       </div>
     </form>

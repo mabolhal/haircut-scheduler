@@ -11,6 +11,8 @@ export async function GET() {
         specialties: true,
         experience: true,
         availability: true,
+        city: true,
+        provinceState: true,
         // Include appointments but we'll filter them out before returning
         appointments: {
           where: {
@@ -32,7 +34,9 @@ export async function GET() {
       name: b.name,
       specialties: b.specialties,
       experience: b.experience,
-      availability: b.availability
+      availability: b.availability,
+      city: b.city,
+      provinceState: b.provinceState
       // Don't include appointments in the response
     }));
 
